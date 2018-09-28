@@ -1,94 +1,70 @@
-struct Policy<'a> {
-    outbound_optimal : usize, 
-    inbound_max : usize,
-    dns_nodes : &'a Vec<usize>,
-}
+mod policy;
+use policy::Policy;
 
-impl<'a> Policy<'a>{
-    pub fn new( outbound_optimal:usize,inbound_max : usize,dns_nodes : &'a Vec<usize>)->Policy{
-        Policy {
-            outbound_optimal : outbound_optimal,
-            inbound_max : inbound_max, 
-            dns_nodes :dns_nodes,
+extern crate csv;
+
+use std::error::Error;
+
+type optimal_out = usize; 
+type max_in = usize;
+
+pub fn csv_to_graph(path : &str)->Result<(Vec<usize>,Vec<Vec<usize>>,optimal_out,max_in),Box<Error>> {
+    
+    // Build the CSV reader and iterate over each record.
+    let mut rdr = csv::ReaderBuilder::new().
+        flexible(true).
+        from_path(path)?;
+
+    let mut graph : Vec<Vec<usize>> = Vec::new();
+
+    for (idx,result) in rdr.records().enumerate(){
+
+        let line = result?;
+        graph.push(Vec::new());
+
+        for element in &line {
+            let num =  element.to_string().parse::<usize>()?;
+            graph[idx].push(num);
         }
     }
-    pub fn is_dns(&self , node : usize)->bool{
-        self.dns_nodes.contains(&node)
-    }
-    pub fn is_violating_graph(&self,graph :& Vec< Vec<usize>>)->bool{
-        
-        let mut violate = false; 
+    // get the dns nodes 
+    if let Some(mut dns_nodes) = graph.pop(){
+        if let Some(max_in) = dns_nodes.pop(){
 
-        for vertex in graph{
-            violate = vertex.iter().any(|&v| self.is_vaiolating_node(v, graph));
-            if violate{
-                break;
+            if let Some(optimal) = dns_nodes.pop(){
+                return Ok((dns_nodes,graph, optimal, max_in))
             }
         }
-        
-        violate
-    }
-    pub fn is_vaiolating_node(&self, node : usize, graph :& Vec< Vec<usize>>)->bool{
-        self.is_violating_optimal_outbound_node(node, graph) ||
-            self.is_violating_max_inbound_node(node, graph)
-    }
-    pub fn is_violating_optimal_outbound_node(&self, node : usize, graph :& Vec< Vec<usize>>)->bool{
-        let outbound_size = graph[node].len();
-        outbound_size > self.outbound_optimal
-    }
-    pub fn is_violating_max_inbound_node(&self, node : usize, graph :& Vec< Vec<usize>>)->bool{
-        let inbound_size = self.get_inbound_edges(node, graph).len();
-        inbound_size > self.inbound_max
     }
 
-    pub fn get_inbound_edges(&self, node : usize, graph :& Vec< Vec<usize>>)->Vec<usize>{
-        
-        let mut inbound : Vec<usize> = Vec::new();
-
-        for (idx, vertex) in graph.into_iter().enumerate(){
-            if idx != node {
-                for v in vertex {
-                    if *v == node {
-                        inbound.push(idx);
-                    }
-                }        
-            }
-        }
-        inbound
-    }
-
-    pub fn get_outbound_edges(&self, node : usize, graph :& Vec< Vec<usize>>)->Vec<usize>{
-        graph[node].clone()
-    }
-
-    pub fn is_satisfied_node(&self, node : usize, graph :& Vec< Vec<usize>>)->bool{
-        let is_violating = self.is_vaiolating_node(node, graph);
-        let outbound = self.get_outbound_edges(node, graph).len();
-        !is_violating && outbound == self.outbound_optimal
-    }   
+    Err(From::from("expected at least one record but got none"))
 }
-//fn get_nodes(graph : &mut Vec< Vec<usize>>){
-
-fn print_graph(graph : &Vec< Vec<usize>>){
-    ///    graph[0].push(2);// = 22;
-    println!("graph = {:?}",graph );
-}
-
-fn get_nodes(graph :& Vec< Vec<usize>>)->Vec<usize>{
-     let size = graph.len();
-     let v: Vec<usize> = (0..size).collect();
-     v
-}
-
-fn get_edges(node : usize , graph :& Vec< Vec<usize>>)->Vec<usize>{
-    let edges_of_node :Vec<usize> = graph[node].clone();
-    edges_of_node
-}
-
 
 
 fn main() {
-    let mut graph : Vec<Vec<usize>> = Vec::new();
+
+    match csv_to_graph("graph_input.csv"){
+        Ok(result)=>{ 
+            let mut dns_nodes = result.0;
+            let mut graph = result.1;
+            let mut optimal_outbound = result.2;
+            let mut max_inbound = result.3;
+            println!("graph => {:?} ", graph);
+            println!("dns nodes => {:?}", dns_nodes);
+            println!("optimal = {} , max_in = {} ",optimal_outbound, max_inbound );
+        },
+        Err(e)=> println!("Error parsing csv {}",e )
+    };
+}
+
+// cargo test -- --nocapture
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_policy_stuff() {
+            let mut graph : Vec<Vec<usize>> = Vec::new();
     let mut dns : Vec<usize> = vec![1,3];
     // node 0,1,2,3
     graph.push(Vec::new());
@@ -107,10 +83,8 @@ fn main() {
     graph[2].push(0);
     // node 3 edges 0 
     graph[3].push(0);
-
-    print_graph(&graph);
-    println!("nodes = {:?}",get_nodes(&graph));
-    println!("edges of 2 = {:?}",get_edges(2,&graph));
+    // 
+    println!("graph = {:?}",graph );
     println!("---------------------" );
     // 2 is a satisfied not violating node!! 
     let optimal = 2; 
@@ -125,4 +99,7 @@ fn main() {
     println!("is violating node ? {}",policy.is_vaiolating_node(test_node,&graph));    
     println!("is violating graph ? {}", policy.is_violating_graph(&graph));
     println!("is satisfied node ? {}",policy.is_satisfied_node(test_node, &graph) );
+    println!("is satisfied graph ? {}",policy.is_satisfied_graph(&graph));
+    assert!(true);
+    }
 }
