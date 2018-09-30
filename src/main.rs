@@ -25,7 +25,7 @@ fn generate(){
 
     let res = generate_input(config);
     print_graph(&res);
-    graph_to_csv("test_delete.csv",&res);
+    graph_to_csv("./samples/test_delete.csv",&res);
 
 }
 /// run the procss of statistics
@@ -185,7 +185,7 @@ mod tests {
     #[test]
     fn test_optimize_graph(){
         
-        let mut path = "g2_test.csv";
+        let mut path = "./samples/g2_test.csv";
         match csv_to_graph(path){
             Ok(result)=>{ 
                 let mut dns_nodes = result.0;
