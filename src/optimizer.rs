@@ -1,5 +1,5 @@
 use std::error::Error;
-use policy::Policy;
+use policy::{Policy,print_graph};
 use std::cmp;
 use std::fmt;
 use std::default::Default;
@@ -25,9 +25,26 @@ pub struct GraphStat{
     pub satisfied_nodes_num : usize, 
     pub dns_nodes_num : usize,
     pub not_satisfied_nodes : usize,
+    pub config_optimal_out : usize , 
+    pub config_max_in : usize, 
 }
 
+impl fmt::Display for GraphStat {
+    
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f,"\n --- START Optimization Stats --- \n\n");
+        
+        write!(f,"\t1) Config: Optimal = {} , Max inbound = {} \n", self.config_optimal_out, self.config_max_in);
+        write!(f,"\t2) Satisfied Graph : {} \n" , self.is_satisfied_graph);
+        write!(f,"\t3) Violated graph : {} \n", self.is_violating_graph);
+        write!(f, "\t4) Total Nodes (with dns) : {} \n", self.final_graph.len());
+        write!(f,"\t5) Satisfied Nodes (exclude dns): {}/{} \n", self.satisfied_nodes_num , self.final_graph.len()- self.dns_nodes_num);
+        write!(f,"\t6) Dns Nodes : {} \n" , self.dns_nodes_num);
+        write!(f,"\t7) Not Satisfied Nodes : {} \n" , self.not_satisfied_nodes);
 
+        write!(f,"\n --- END Optimization Stats --- \n\n")
+    }
+}
 pub struct Optimizer<'a,'b>{
     policy : Policy<'b>,
     initial_graph :&'a Graph
@@ -63,7 +80,9 @@ impl<'a,'b> Optimizer<'a,'b>{
                         changed_nodes += 1;
                     }
                     if self.policy.is_satisfied_node(id, &initial_graph){
-                        satisfied_nodes += 1;
+                        if !self.policy.is_dns(id){
+                            satisfied_nodes += 1;
+                        }
                     }
                     node_stats.push((stat, new_graph));
                 },
@@ -86,6 +105,8 @@ impl<'a,'b> Optimizer<'a,'b>{
         graph_stats.satisfied_nodes_num = satisfied_nodes; 
         graph_stats.dns_nodes_num  = self.policy.dns_nodes_size();
         graph_stats.not_satisfied_nodes = initial_graph.len() - (self.policy.dns_nodes_size() + satisfied_nodes);
+        graph_stats.config_max_in = self.policy.get_inbound_max();
+        graph_stats.config_optimal_out = self.policy.get_outbound_optimal();
         Ok(graph_stats)
     }
     pub fn try_satisfy_node(&self, node : usize,  graph: &mut Graph)->Result<(Graph,NodeStat), Box<Error>>{

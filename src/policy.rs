@@ -126,12 +126,11 @@ impl<'a> Policy<'a>{
     pub fn is_satisfied_graph(&self, graph : &Vec<Vec<usize>>)->bool{
         
         let mut satisfied_graph = true;
-
-        for (idx,vertex) in graph.into_iter().enumerate(){
+        for (idx,_) in graph.into_iter().enumerate(){
             
             if !self.is_dns(idx){
-
-                satisfied_graph = vertex.iter().any(|&v| self.is_satisfied_node(v, graph));
+                satisfied_graph = self.is_satisfied_node(idx, graph);
+                // satisfied_graph = vertex.iter().any(|&v| self.is_satisfied_node(v, graph));
                 if !satisfied_graph{
                     break;
                 }    
