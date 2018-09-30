@@ -11,16 +11,16 @@ use input::*;
 use std::error::Error;
 
 fn main() {
-    let path = "./samples/g_8_100_99_1.csv";
-    // generate(&path);
-    run();
+    let path = "./samples/g_o65_n1000_m1000_d1.csv";
+    generate(&path);
+    run(&path);
 }
 fn generate(path : &str){
     
     let config = GeneratorConfig{
-        opt : 8 ,
-        n : 100 ,
-        max : 99,
+        opt : 65 ,
+        n : 1000 ,
+        max : 1000,
         edges : Vec::new(),
         dns_nodes : 1
     };
@@ -30,11 +30,10 @@ fn generate(path : &str){
     graph_to_csv(path,&res);
 }
 /// run the procss of statistics
-fn run() {
+fn run(path : &str) {
 
     let args: Vec<String> = env::args().collect();
-    let mut path = "./samples/g_8_100_99_1.csv";
-
+    let mut path = path;
     if args.len()>1 {
         path = &args[1];
     }

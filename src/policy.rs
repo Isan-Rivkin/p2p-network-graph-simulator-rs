@@ -83,6 +83,9 @@ impl<'a> Policy<'a>{
             self.is_violating_max_inbound_node(node, graph)
     }
     pub fn is_violating_optimal_outbound_node(&self, node : usize, graph :& Vec< Vec<usize>>)->bool{
+        // if self.is_dns(node){
+        //     return false;
+        // }
         let outbound_size = graph[node].len();
         outbound_size > self.outbound_optimal
     }
