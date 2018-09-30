@@ -1,4 +1,4 @@
-use std::error::Error;
+use std::error::Error;  
 use csv;
 
 pub type OptimalOut = usize; 
@@ -19,8 +19,10 @@ pub fn csv_to_graph(path : &str)->Result<(Vec<usize>,Vec<Vec<usize>>,OptimalOut,
         graph.push(Vec::new());
 
         for element in &line {
-            let num =  element.to_string().parse::<usize>()?;
-            graph[idx].push(num);
+            if element.to_string() != "~"{
+                let num =  element.to_string().parse::<usize>()?;
+                graph[idx].push(num);
+            }
         }
     }
     // get the dns nodes 
