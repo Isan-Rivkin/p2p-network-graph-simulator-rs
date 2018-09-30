@@ -78,6 +78,7 @@ impl<'a> Policy<'a>{
         violate
     }
     pub fn is_vaiolating_node(&self, node : usize, graph :& Vec< Vec<usize>>)->bool{
+
         self.is_violating_optimal_outbound_node(node, graph) ||
             self.is_violating_max_inbound_node(node, graph)
     }
