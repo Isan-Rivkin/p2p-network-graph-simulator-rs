@@ -11,18 +11,25 @@ use input::*;//{csv_to_graph,generate_input,GeneratorConfig};
 use std::error::Error;
 
 fn main() {
-
+    generate();
+}
+fn generate(){
+    
     let config = GeneratorConfig{
         opt : 8 ,
         n : 5 ,
         max : 120,
         edges : Vec::new(),
-        dns_nodes : 3
+        dns_nodes : 1
     };
+
     let res = generate_input(config);
     print_graph(&res);
+    graph_to_csv("test_delete.csv",&res);
+
 }
-fn main2() {
+/// run the procss of statistics
+fn run() {
 
     let args: Vec<String> = env::args().collect();
     let mut path = "graph_input.csv";
@@ -68,22 +75,22 @@ fn main2() {
 mod tests {
     use super::*;
 
-    //#[test]
-    // fn test_generate_graph_input(){
-    //     let config = GeneratorConfig{
-    //         opt : 8 ,
-    //         n : 5 ,
-    //         max : 120,
-    //         edges : Vec::new(),
-    //         dns_nodes : 3
-    //     };
-    //     let res = generate_input(config);
-    //     print_graph(&res);
-    //     assert_eq!(6,res.len() );
-    //     assert_eq!(1,res[0][0] );
-    //     assert_eq!(2,res[1][1] );
-    //     assert_eq!(120 ,res[5][4] );
-    // }
+    #[test]
+    fn test_generate_graph_input(){
+        let config = GeneratorConfig{
+            opt : 8 ,
+            n : 5 ,
+            max : 120,
+            edges : Vec::new(),
+            dns_nodes : 3
+        };
+        let res = generate_input(config);
+        print_graph(&res);
+        assert_eq!(6,res.len() );
+        assert_eq!(1,res[0][0] );
+        assert_eq!(2,res[1][1] );
+        assert_eq!(120 ,res[5][4] );
+    }
     #[test]
     fn test_policy_stuff() {
 

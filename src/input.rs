@@ -6,6 +6,22 @@ use optimizer::Graph;
 pub type OptimalOut = usize; 
 pub type MaxIn = usize;
 
+pub fn graph_to_csv(path : &str, g : &Graph)->Result<(),Box<Error>>{
+
+    let instructions = "if no connections type ~;last raw order : dns nodes are first, optimal, max_in // i.e 1,0,8,125";
+    let mut wtr = csv::WriterBuilder::new().flexible(true).from_path(path)?;
+    wtr.write_record(&[instructions])?;
+    
+    for line in g {
+        if line.len() == 0{
+            wtr.write_record(&["~"])?;    
+        }else{
+            wtr.write_record(line.iter().map(|n| n.to_string()))?;
+        }
+    }
+
+    Ok(())
+}
 pub fn csv_to_graph(path : &str)->Result<(Vec<usize>,Vec<Vec<usize>>,OptimalOut,MaxIn),Box<Error>> {
     
     // Build the CSV reader and iterate over each record.
@@ -61,7 +77,7 @@ pub fn generate_input(config : GeneratorConfig)->Graph{
         the_input.push(Vec::new());
 
         // connect the dns's to each other 
-        if i< config.dns_nodes{
+        if i< config.dns_nodes && config.dns_nodes > 1{
             
             let mut edges : Vec<usize> = dns_nodes.clone().into_iter()
             .filter(|&dn| dn != i)
@@ -69,7 +85,7 @@ pub fn generate_input(config : GeneratorConfig)->Graph{
             
             the_input[i].append(&mut edges);
 
-        }    
+        }
         // connect to dns  
         if i >= config.dns_nodes{
             let mut c = dns_nodes.clone();
