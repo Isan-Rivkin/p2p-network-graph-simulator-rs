@@ -7,7 +7,7 @@ mod optimizer;
 use std::env;
 use optimizer::{Graph, Optimizer};
 use policy::{Policy,print_graph};
-use input::*;//{csv_to_graph,generate_input,GeneratorConfig};
+use input::*;
 use std::error::Error;
 
 fn main() {
@@ -143,7 +143,7 @@ mod tests {
 
     #[test]
     fn test_optimize_node() {
-    let mut path = "g1_test.csv";
+    let  path = "./samples/g1_test.csv";
 
 
     match csv_to_graph(path){
@@ -178,7 +178,7 @@ mod tests {
                 },
             };
         },
-        Err(e)=> println!("Error parsing csv {}",e )
+        Err(e)=> assert!(false)
     };
     }
 
